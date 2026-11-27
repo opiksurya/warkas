@@ -8,6 +8,7 @@ use App\Models\IndonesiaProductCatalog;
 use App\Models\OperationalExpense;
 use App\Models\Product;
 use App\Models\Sale;
+use App\Models\StockOpname;
 use App\Models\StoreSetting;
 use App\Models\Supplier;
 use Illuminate\Database\Seeder;
@@ -344,6 +345,74 @@ class DatabaseSeeder extends Seeder
                     'notes' => '2 Pak plastik + 2 roll kertas kasir',
                     'created_at' => now(),
                     'updated_at' => now(),
+                ],
+            ]);
+        }
+
+        // 9. Contoh Riwayat Stok Opname Awal (Untuk Report History Selisih Stok)
+        if (StockOpname::count() === 0 && count($seededProducts) >= 4) {
+            $opname = StockOpname::create([
+                'reference_number' => 'SO-' . now()->subDay()->format('Ymd') . '-0001',
+                'opname_date' => now()->subDay()->toDateString(),
+                'auditor_name' => 'Kepala Gudang (Budi)',
+                'total_items_checked' => 4,
+                'total_matched' => 2,
+                'total_surplus_qty' => 2,
+                'total_deficit_qty' => 3,
+                'total_surplus_value' => 2 * $seededProducts[1]->cost_price,
+                'total_deficit_value' => 3 * $seededProducts[0]->cost_price,
+                'net_value_difference' => (2 * $seededProducts[1]->cost_price) - (3 * $seededProducts[0]->cost_price),
+                'notes' => 'Stok Opname Rutin Rak Depan & Gudang Utama',
+            ]);
+
+            $opname->items()->createMany([
+                [
+                    'product_id' => $seededProducts[0]->id,
+                    'barcode' => $seededProducts[0]->barcode,
+                    'product_name' => $seededProducts[0]->name,
+                    'unit_name' => $seededProducts[0]->base_unit,
+                    'cost_price' => $seededProducts[0]->cost_price,
+                    'system_stock' => 143,
+                    'physical_stock' => 140,
+                    'difference_qty' => -3,
+                    'difference_value' => -3 * $seededProducts[0]->cost_price,
+                    'reason' => 'Barang Rusak / Kemasan Sobek',
+                ],
+                [
+                    'product_id' => $seededProducts[1]->id,
+                    'barcode' => $seededProducts[1]->barcode,
+                    'product_name' => $seededProducts[1]->name,
+                    'unit_name' => $seededProducts[1]->base_unit,
+                    'cost_price' => $seededProducts[1]->cost_price,
+                    'system_stock' => 94,
+                    'physical_stock' => 96,
+                    'difference_qty' => 2,
+                    'difference_value' => 2 * $seededProducts[1]->cost_price,
+                    'reason' => 'Bonus / Lebih Kirim Supplier',
+                ],
+                [
+                    'product_id' => $seededProducts[2]->id,
+                    'barcode' => $seededProducts[2]->barcode,
+                    'product_name' => $seededProducts[2]->name,
+                    'unit_name' => $seededProducts[2]->base_unit,
+                    'cost_price' => $seededProducts[2]->cost_price,
+                    'system_stock' => 72,
+                    'physical_stock' => 72,
+                    'difference_qty' => 0,
+                    'difference_value' => 0,
+                    'reason' => 'Sesuai / Cocok',
+                ],
+                [
+                    'product_id' => $seededProducts[3]->id,
+                    'barcode' => $seededProducts[3]->barcode,
+                    'product_name' => $seededProducts[3]->name,
+                    'unit_name' => $seededProducts[3]->base_unit,
+                    'cost_price' => $seededProducts[3]->cost_price,
+                    'system_stock' => 48,
+                    'physical_stock' => 48,
+                    'difference_qty' => 0,
+                    'difference_value' => 0,
+                    'reason' => 'Sesuai / Cocok',
                 ],
             ]);
         }
