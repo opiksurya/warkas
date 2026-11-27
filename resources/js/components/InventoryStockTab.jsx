@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
     Package, Search, AlertTriangle, PlusCircle, Trash2,
-    Barcode, Layers
+    Barcode, Layers, ClipboardCheck
 } from 'lucide-react';
 import { formatRp, calculateSellingPrice, apiFetch } from '../utils/format';
 
@@ -12,6 +12,7 @@ export default function InventoryStockTab({
     onRefresh,
     onGoToScanTab,
     onGoToBulkEdit,
+    onGoToStockOpname,
     notify,
 }) {
     const [search, setSearch] = useState('');
@@ -130,13 +131,20 @@ export default function InventoryStockTab({
                         Pantau sisa stok real-time, nilai aset modal (HPP), dan restock cepat
                     </p>
                 </div>
-                <div className="grid grid-cols-2 sm:flex items-center gap-2">
+                <div className="grid grid-cols-3 sm:flex items-center gap-2">
                     <button
                         type="button"
                         onClick={onGoToScanTab}
                         className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg cursor-pointer"
                     >
                         <Barcode className="w-4 h-4" /> + Scan Barang
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onGoToStockOpname}
+                        className="px-3.5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg cursor-pointer"
+                    >
+                        <ClipboardCheck className="w-4 h-4" /> Stok Opname
                     </button>
                     <button
                         type="button"

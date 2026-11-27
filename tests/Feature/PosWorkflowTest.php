@@ -92,5 +92,23 @@ class PosWorkflowTest extends TestCase
                     'net_profit',
                 ],
             ]);
+
+        // 9. Cek Stok Opname (Sandingkan Data Lama 30 vs Data Baru 28 -> Selisih -2, Stok produk terganti jadi 28, dan tersimpan di History)
+        $opnameRes = $this->postJson('/api/pos/stock-opnames', [
+            'auditor_name' => 'Kepala Gudang Budi',
+            'notes' => 'Stok Opname Mingguan',
+            'items' => [
+                [
+                    'product_id' => $newProdId,
+                    'physical_stock' => 28,
+                    'reason' => 'Barang Rusak / Expired',
+                ],
+            ],
+        ])->assertStatus(200);
+
+        $this->assertEquals(28, Product::find($newProdId)->stock);
+        $this->assertEquals(30, $opnameRes->json('stock_opname.items.0.system_stock'));
+        $this->assertEquals(28, $opnameRes->json('stock_opname.items.0.physical_stock'));
+        $this->assertEquals(-2, $opnameRes->json('stock_opname.items.0.difference_qty'));
     }
 }

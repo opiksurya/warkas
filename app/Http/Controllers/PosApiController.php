@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\ReceivablePayment;
 use App\Models\Sale;
+use App\Models\StockOpname;
 use App\Models\StoreSetting;
 use App\Models\Supplier;
 use App\Services\ProductLookupService;
@@ -43,6 +44,7 @@ class PosApiController extends Controller
                 ->orderBy('due_date')
                 ->get(),
             'purchases' => Purchase::with(['supplier', 'items.product'])->latest()->limit(30)->get(),
+            'stock_opnames' => StockOpname::with('items')->latest()->limit(30)->get(),
             'profit_loss' => $reportService->generate($startOfMonth, $today),
             'settings' => StoreSetting::pluck('value', 'key'),
         ]);
@@ -601,6 +603,105 @@ class PosApiController extends Controller
         return response()->json([
             'message' => 'Pengaturan toko & WhatsApp Gateway berhasil disimpan!',
             'settings' => StoreSetting::pluck('value', 'key'),
+        ]);
+    }
+
+    /**
+     * Proses Stok Opname:
+     * Sandingkan Data Stok Lama (system_stock) dengan Data Stok Baru (physical_stock),
+     * ganti stok produk lama dengan stok fisik baru, dan simpan laporan riwayat selisihnya.
+     */
+    public function storeStockOpname(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'auditor_name' => 'nullable|string|max:120',
+            'notes' => 'nullable|string|max:1000',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.physical_stock' => 'required|numeric|min:0',
+            'items.*.reason' => 'nullable|string|max:255',
+        ]);
+
+        $opname = DB::transaction(function () use ($data) {
+            $countToday = StockOpname::whereDate('created_at', today())->count() + 1;
+            $refNumber = 'SO-' . now()->format('Ymd') . '-' . str_pad((string) $countToday, 4, '0', STR_PAD_LEFT);
+
+            $totalChecked = 0;
+            $totalMatched = 0;
+            $totalSurplusQty = 0;
+            $totalDeficitQty = 0;
+            $totalSurplusVal = 0;
+            $totalDeficitVal = 0;
+            $preparedItems = [];
+
+            foreach ($data['items'] as $row) {
+                $product = Product::lockForUpdate()->find($row['product_id']);
+                if (!$product) {
+                    continue;
+                }
+
+                $systemStock = (float) $product->stock;
+                $physicalStock = (float) $row['physical_stock'];
+                $diffQty = round($physicalStock - $systemStock, 2);
+                $costPrice = (float) $product->cost_price;
+                $diffValue = round($diffQty * $costPrice, 2);
+
+                $totalChecked++;
+                if (abs($diffQty) < 0.001) {
+                    $totalMatched++;
+                } elseif ($diffQty > 0) {
+                    $totalSurplusQty += $diffQty;
+                    $totalSurplusVal += $diffValue;
+                } else {
+                    $totalDeficitQty += abs($diffQty);
+                    $totalDeficitVal += abs($diffValue);
+                }
+
+                $defaultReason = abs($diffQty) < 0.001
+                    ? 'Sesuai / Cocok'
+                    : ($diffQty < 0 ? 'Selisih Kurang / Susut' : 'Selisih Lebih');
+
+                $preparedItems[] = [
+                    'product_id' => $product->id,
+                    'barcode' => $product->barcode,
+                    'product_name' => $product->name,
+                    'unit_name' => $product->base_unit,
+                    'cost_price' => $costPrice,
+                    'system_stock' => $systemStock,
+                    'physical_stock' => $physicalStock,
+                    'difference_qty' => $diffQty,
+                    'difference_value' => $diffValue,
+                    'reason' => !empty($row['reason']) ? $row['reason'] : $defaultReason,
+                ];
+
+                // Ganti stok lama di tabel products dengan stok baru hasil opname
+                if (abs($diffQty) >= 0.001) {
+                    $product->update(['stock' => $physicalStock]);
+                }
+            }
+
+            $opname = StockOpname::create([
+                'reference_number' => $refNumber,
+                'opname_date' => now()->toDateString(),
+                'auditor_name' => $data['auditor_name'] ?: 'Admin Gudang',
+                'total_items_checked' => $totalChecked,
+                'total_matched' => $totalMatched,
+                'total_surplus_qty' => $totalSurplusQty,
+                'total_deficit_qty' => $totalDeficitQty,
+                'total_surplus_value' => $totalSurplusVal,
+                'total_deficit_value' => $totalDeficitVal,
+                'net_value_difference' => $totalSurplusVal - $totalDeficitVal,
+                'notes' => $data['notes'] ?? 'Pemeriksaan rutin stok opname toko',
+            ]);
+
+            $opname->items()->createMany($preparedItems);
+
+            return $opname->load('items');
+        });
+
+        return response()->json([
+            'message' => "Stok Opname {$opname->reference_number} selesai! Data stok lama telah diperbarui dengan stok fisik baru & riwayat selisih berhasil disimpan.",
+            'stock_opname' => $opname,
         ]);
     }
 

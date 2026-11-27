@@ -2,11 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
     ShoppingCart, Package, Barcode, Layers, Clock, TrendingUp,
-    Truck, Store, CheckCircle2, AlertCircle, Sun, Moon
+    Truck, Store, CheckCircle2, AlertCircle, Sun, Moon, ClipboardCheck
 } from 'lucide-react';
 import { apiFetch } from './utils/format';
 import PosCashierTab from './components/PosCashierTab';
 import InventoryStockTab from './components/InventoryStockTab';
+import StockOpnameTab from './components/StockOpnameTab';
 import ScanStockTab from './components/ScanStockTab';
 import BulkEditTab from './components/BulkEditTab';
 import ReceivablesTab from './components/ReceivablesTab';
@@ -26,6 +27,7 @@ function WarkasPosApp() {
         catalog_samples: [],
         recent_sales: [],
         receivable_sales: [],
+        stock_opnames: [],
         profit_loss: null,
         settings: {},
     });
@@ -75,6 +77,12 @@ function WarkasPosApp() {
             shortLabel: 'Stok',
             icon: Package,
             badge: lowStockCount,
+        },
+        {
+            id: 'stock_opname',
+            label: 'Stok Opname',
+            shortLabel: 'Opname',
+            icon: ClipboardCheck,
         },
         {
             id: 'scan_stock',
@@ -225,6 +233,16 @@ function WarkasPosApp() {
                                 onRefresh={loadBootstrapData}
                                 onGoToScanTab={() => setActiveTab('scan_stock')}
                                 onGoToBulkEdit={() => setActiveTab('bulk_edit')}
+                                onGoToStockOpname={() => setActiveTab('stock_opname')}
+                                notify={notify}
+                            />
+                        )}
+                        {activeTab === 'stock_opname' && (
+                            <StockOpnameTab
+                                products={data.products}
+                                categories={data.categories}
+                                stockOpnames={data.stock_opnames}
+                                onRefresh={loadBootstrapData}
                                 notify={notify}
                             />
                         )}
@@ -273,7 +291,7 @@ function WarkasPosApp() {
 
             {/* NATIVE-STYLE MOBILE BOTTOM NAVIGATION BAR (Hanya tampil di HP / Layar < 768px) */}
             <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.35)]">
-                <div className="grid grid-cols-7 items-center px-1 py-1.5">
+                <div className="flex items-center justify-between overflow-x-auto no-scrollbar px-1.5 py-1.5 gap-1">
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const active = activeTab === item.id;
@@ -285,7 +303,7 @@ function WarkasPosApp() {
                                     setActiveTab(item.id);
                                     window.scrollTo({ top: 0, behavior: 'smooth' });
                                 }}
-                                className={`relative flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition cursor-pointer ${
+                                className={`relative flex flex-col items-center justify-center py-1 px-2 min-w-[52px] rounded-xl transition cursor-pointer shrink-0 ${
                                     active
                                         ? 'text-emerald-400 font-bold'
                                         : 'text-slate-400 hover:text-slate-200 font-medium'

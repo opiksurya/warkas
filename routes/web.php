@@ -18,6 +18,7 @@ Route::prefix('api/pos')->group(function () {
     Route::post('/products/scan-save', [PosApiController::class, 'storeOrRestockProduct']);
     Route::post('/products/bulk-update', [PosApiController::class, 'bulkUpdateProducts']);
     Route::delete('/products/{product}', [PosApiController::class, 'deleteProduct']);
+    Route::post('/stock-opnames', [PosApiController::class, 'storeStockOpname']);
 
     Route::post('/checkout', [PosApiController::class, 'checkout']);
     Route::post('/sales/{sale}/send-wa', [PosApiController::class, 'sendWhatsAppReceipt']);
