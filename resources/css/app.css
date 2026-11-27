@@ -1,0 +1,160 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* Light Mode Adaptive Theme Overrides */
+html.theme-light body,
+.theme-light {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+}
+
+.theme-light .bg-slate-950,
+.theme-light .bg-slate-950\/95,
+.theme-light .bg-slate-950\/90,
+.theme-light .bg-slate-950\/80,
+.theme-light .bg-slate-950\/60,
+.theme-light .bg-slate-950\/50 {
+    background-color: #f8fafc !important;
+}
+
+.theme-light .bg-slate-900,
+.theme-light .bg-slate-900\/95,
+.theme-light .bg-slate-900\/90,
+.theme-light .bg-slate-900\/80 {
+    background-color: rgba(255, 255, 255, 0.96) !important;
+    box-shadow: 0 1px 3px 0 rgb(15 23 42 / 0.06), 0 1px 2px -1px rgb(15 23 42 / 0.06);
+}
+
+.theme-light header,
+.theme-light nav.fixed {
+    background-color: rgba(255, 255, 255, 0.96) !important;
+    border-color: #cbd5e1 !important;
+}
+
+.theme-light .bg-slate-800,
+.theme-light .bg-slate-800\/80,
+.theme-light .bg-slate-800\/90 {
+    background-color: #e2e8f0 !important;
+}
+
+.theme-light .hover\:bg-slate-800:hover,
+.theme-light .hover\:bg-slate-800\/80:hover,
+.theme-light .hover\:bg-slate-800\/90:hover,
+.theme-light .hover\:bg-slate-700:hover {
+    background-color: #cbd5e1 !important;
+}
+
+.theme-light .hover\:bg-slate-950\/60:hover,
+.theme-light .hover\:bg-slate-950\/50:hover {
+    background-color: #f1f5f9 !important;
+}
+
+.theme-light .border-slate-800,
+.theme-light .border-slate-800\/80,
+.theme-light .border-slate-700 {
+    border-color: #cbd5e1 !important;
+}
+
+.theme-light .divide-slate-800 > :not([hidden]) ~ :not([hidden]),
+.theme-light .divide-slate-800\/70 > :not([hidden]) ~ :not([hidden]),
+.theme-light .divide-slate-800\/80 > :not([hidden]) ~ :not([hidden]) {
+    border-color: #e2e8f0 !important;
+}
+
+.theme-light .text-white,
+.theme-light .text-slate-100,
+.theme-light .text-slate-200 {
+    color: #0f172a !important;
+}
+
+.theme-light .text-slate-300 {
+    color: #334155 !important;
+}
+
+.theme-light .text-slate-400,
+.theme-light .text-slate-500 {
+    color: #64748b !important;
+}
+
+/* Preserve white text on solid accent buttons in Light Mode */
+.theme-light .bg-emerald-600.text-white,
+.theme-light .bg-emerald-600 .text-white,
+.theme-light .bg-emerald-600 span,
+.theme-light .bg-rose-600.text-white,
+.theme-light .bg-slate-900.text-white {
+    color: #ffffff !important;
+}
+
+.theme-light .bg-emerald-600 .text-emerald-900 {
+    color: #064e3b !important;
+}
+
+.theme-light .bg-emerald-600 {
+    background-color: #059669 !important;
+}
+
+/* Accent readability in Light Mode */
+.theme-light .text-emerald-400,
+.theme-light .text-emerald-300,
+.theme-light .text-emerald-200 {
+    color: #047857 !important;
+}
+
+.theme-light .text-amber-400,
+.theme-light .text-amber-300 {
+    color: #b45309 !important;
+}
+
+.theme-light .text-rose-400,
+.theme-light .text-rose-300 {
+    color: #be123c !important;
+}
+
+.theme-light .bg-emerald-950\/40,
+.theme-light .bg-emerald-950\/50,
+.theme-light .bg-emerald-950 {
+    background-color: #ecfdf5 !important;
+}
+
+.theme-light .bg-rose-950\/30,
+.theme-light .bg-rose-950 {
+    background-color: #fff1f2 !important;
+}
+
+.theme-light input,
+.theme-light select,
+.theme-light textarea {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+}
+
+.theme-light input::placeholder {
+    color: #94a3b8 !important;
+}
+
+/* Mobile App Utilities & Safe Area Support */
+.pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0.5rem);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+@media (max-width: 767px) {
+    input, select, textarea, button {
+        touch-action: manipulation;
+    }
+}
